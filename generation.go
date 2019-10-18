@@ -8,6 +8,8 @@ import (
 	"math/big"
 )
 
+var bigOne *big.Int = big.NewInt(1)
+
 func GenerateIV(length int) ([]int8, error) {
 	if length < 1 {
 		return nil, IVZeroLengthError{}
@@ -26,6 +28,15 @@ func GenerateIV(length int) ([]int8, error) {
 	return IV, nil
 }
 
+func isNonZeroVector(vector []int8) bool {
+	for _, v := range vector {
+		if v != 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
 	var bigKeyWithExcludedLength big.Int
 	bigKeyWithExcludedLength.Mod(key, big.NewInt(int64(dataLength<<3)))
@@ -34,9 +45,13 @@ func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	bytesToRotate = int(keyWithExcludedLength >> 3)
 	unsignedDerivedKey := make([]byte, dataLength)
 	derivedKey = make([]int8, dataLength)
-	io.ReadFull(hkdf.New(sha512.New, key.Bytes(), salt, nil), unsignedDerivedKey)
-	for i, v := range unsignedDerivedKey {
-		derivedKey[i] = asSigned(v)
+	for ok := true; ok; ok = !isNonZeroVector(derivedKey) {
+		io.ReadFull(hkdf.New(sha512.New, key.Bytes(), salt, nil), unsignedDerivedKey)
+		for i, v := range unsignedDerivedKey {
+			derivedKey[i] = asSigned(v)
+		}
+		key.Add(key, bigOne)
 	}
+
 	return
 }
