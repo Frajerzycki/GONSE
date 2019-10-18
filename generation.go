@@ -45,12 +45,13 @@ func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	bytesToRotate = int(keyWithExcludedLength >> 3)
 	unsignedDerivedKey := make([]byte, dataLength)
 	derivedKey = make([]int8, dataLength)
+	keyCopy := *key
 	for ok := true; ok; ok = !isNonZeroVector(derivedKey) {
-		io.ReadFull(hkdf.New(sha512.New, key.Bytes(), salt, nil), unsignedDerivedKey)
+		io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
 		for i, v := range unsignedDerivedKey {
 			derivedKey[i] = asSigned(v)
 		}
-		key.Add(key, bigOne)
+		keyCopy.Add(key, bigOne)
 	}
 
 	return
