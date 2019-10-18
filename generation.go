@@ -14,7 +14,6 @@ func GenerateIV(length int) ([]int8, error) {
 	if length < 1 {
 		return nil, IVZeroLengthError{}
 	}
-
 	unsignedIV := make([]byte, length)
 	_, err := rand.Read(unsignedIV)
 	if err != nil {
@@ -46,12 +45,13 @@ func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	unsignedDerivedKey := make([]byte, dataLength)
 	derivedKey = make([]int8, dataLength)
 	keyCopy := *key
+	keyCopyRef := &keyCopy
 	for ok := true; ok; ok = !isNonZeroVector(derivedKey) {
-		io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
+		io.ReadFull(hkdf.New(sha512.New, keyCopyRef.Bytes(), salt, nil), unsignedDerivedKey)
 		for i, v := range unsignedDerivedKey {
 			derivedKey[i] = asSigned(v)
 		}
-		keyCopy.Add(key, bigOne)
+		keyCopyRef.Add(keyCopyRef, bigOne)
 	}
 
 	return
