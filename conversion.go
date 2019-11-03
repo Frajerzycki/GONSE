@@ -8,12 +8,23 @@ func Int64sToBytes(data []int64) ([]byte, error) {
 	}
 
 	dataLength := len(data)
-	resultLength := dataLength << 3
+	resultLength := dataLength * 9
 	result := make([]byte, resultLength)
-	for index := 0; index < resultLength; index += 8 {
-		binary.PutVarint(result[index:], data[index>>3])
+	resultIndex := 0
+	for dataIndex := 0; dataIndex < dataLength; dataIndex++ {
+		buffer := make([]byte, 8)
+		binary.PutVarint(buffer, data[dataIndex])
+		lastNonZeroIndex := 7
+		for ; buffer[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
+		}
+		result[resultIndex] = byte(lastNonZeroIndex + 1)
+		resultIndex++
+		for index := 0; index <= lastNonZeroIndex; index++ {
+			result[resultIndex] = buffer[index]
+			resultIndex++
+		}
 	}
-	return result, nil
+	return result[:resultIndex], nil
 }
 
 func BytesToInt64s(data []byte) ([]int64, error) {
@@ -22,16 +33,20 @@ func BytesToInt64s(data []byte) ([]int64, error) {
 	}
 
 	dataLength := len(data)
-	if dataLength&7 > 0 {
-		return nil, BytesDivisionError{dataLength}
-	}
 
-	resultLength := dataLength >> 3
+	resultLength := dataLength
 	result := make([]int64, resultLength)
-	for index := 0; index < dataLength; index += 8 {
-		result[index>>3], _ = binary.Varint(data[index : index+8])
+	resultIndex := 0
+	for dataIndex := 0; dataIndex < dataLength; resultIndex++ {
+		newDataIndex := dataIndex + int(data[dataIndex]) + 1
+		if newDataIndex < dataLength {
+			return nil, WrongDataFormatError
+		}
+
+		result[resultIndex], _ = binary.Varint(data[dataIndex+1 : newDataIndex])
+		dataIndex = newDataIndex
 	}
-	return result, nil
+	return result[:resultIndex], nil
 }
 
 func Int8sToBytes(data []int8) []byte {
