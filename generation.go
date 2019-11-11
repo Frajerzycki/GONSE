@@ -17,7 +17,7 @@ func GenerateIV(length int) ([]int8, error) {
 	unsignedIV := make([]byte, length)
 	_, err := rand.Read(unsignedIV)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	IV := make([]int8, length)
 	for index, value := range unsignedIV {
