@@ -39,7 +39,7 @@ func BytesToInt64s(data []byte) ([]int64, error) {
 	resultIndex := 0
 	for dataIndex := 0; dataIndex < dataLength; resultIndex++ {
 		newDataIndex := dataIndex + int(data[dataIndex]) + 1
-		if newDataIndex < dataLength {
+		if newDataIndex > dataLength {
 			return nil, WrongDataFormatError
 		}
 
