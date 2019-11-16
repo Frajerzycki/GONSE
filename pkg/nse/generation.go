@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"golang.org/x/crypto/hkdf"
+	"github.com/frajerzycki/gonse/internal/errors"
 	"io"
 	"math/big"
 )
@@ -12,7 +13,7 @@ var bigOne *big.Int = big.NewInt(1)
 
 func GenerateIV(length int) ([]int8, error) {
 	if length < 1 {
-		return nil, IVZeroLengthError
+		return nil, errors.IVZeroLengthError
 	}
 	unsignedIV := make([]byte, length)
 	_, err := rand.Read(unsignedIV)

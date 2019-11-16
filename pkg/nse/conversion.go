@@ -1,12 +1,11 @@
 package nse
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"github.com/frajerzycki/gonse/internal/errors"
+	)
 
 func Int64sToBytes(data []int64) ([]byte, error) {
-	if data == nil {
-		return nil, NilArgumentError{"Data"}
-	}
-
 	dataLength := len(data)
 	resultLength := dataLength * 9
 	result := make([]byte, resultLength)
@@ -28,10 +27,6 @@ func Int64sToBytes(data []int64) ([]byte, error) {
 }
 
 func BytesToInt64s(data []byte) ([]int64, error) {
-	if data == nil {
-		return nil, NilArgumentError{"Data"}
-	}
-
 	dataLength := len(data)
 
 	resultLength := dataLength
@@ -40,7 +35,7 @@ func BytesToInt64s(data []byte) ([]int64, error) {
 	for dataIndex := 0; dataIndex < dataLength; resultIndex++ {
 		newDataIndex := dataIndex + int(data[dataIndex]) + 1
 		if newDataIndex > dataLength {
-			return nil, WrongDataFormatError
+			return nil, errors.WrongDataFormatError
 		}
 
 		result[resultIndex], _ = binary.Varint(data[dataIndex+1 : newDataIndex])

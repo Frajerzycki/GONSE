@@ -1,6 +1,9 @@
 package nse
 
-import "math/big"
+import (
+	"math/big"
+	"github.com/frajerzycki/gonse/internal/errors"
+	)
 
 var bigZero *big.Int = big.NewInt(0)
 
@@ -78,28 +81,18 @@ func asUnsigned(b int8) byte {
 
 func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 	var err error
-	switch {
-	case data == nil:
-		err = NilArgumentError{"Data"}
-	case IV == nil:
-		err = NilArgumentError{"Initalization vector"}
-	case key == nil:
-		err = NilArgumentError{"Key"}
-	}
 
 	dataLength := len(data)
 	IVLength := len(IV)
 
 	switch {
 	case dataLength < 1:
-		err = NilArgumentError{"Data"}
+		// error to be customized
+		return nil, nil 
 	case dataLength != IVLength:
-		err = DifferentIVLengthError{IVLength, dataLength}
+		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(big.NewInt(0)) <= 0:
-		err = NotPositiveIntegerKeyError{key}
-	}
-	if err != nil {
-		return nil, err
+		return nil, errors.NotPositiveIntegerKeyError{key}
 	}
 
 	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, dataLength)
@@ -126,29 +119,18 @@ func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 
 func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byte, error) {
 	var err error
-	switch {
-	case encryptedData == nil:
-		err = NilArgumentError{"Encrypted data"}
-	case IV == nil:
-		err = NilArgumentError{"Initalization vector"}
-	case key == nil:
-		err = NilArgumentError{"Key"}
-	}
 
 	dataLength := len(encryptedData)
 	IVLength := len(IV)
 
 	switch {
 	case dataLength < 1:
-		err = NilArgumentError{"Encrypted data"}
+		// error to be customized
+		return nil, nil
 	case dataLength != IVLength:
-		err = DifferentIVLengthError{IVLength, dataLength}
+		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(bigZero) <= 0:
-		err = NotPositiveIntegerKeyError{key}
-	}
-
-	if err != nil {
-		return nil, err
+		return nil, errors.NotPositiveIntegerKeyError{key}
 	}
 
 	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, dataLength)
