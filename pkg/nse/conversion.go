@@ -2,7 +2,7 @@ package nse
 
 import (
 	"encoding/binary"
-	"github.com/frajerzycki/gonse/internal/errors"
+	"github.com/ikcilrep/gonse/internal/errors"
 	)
 
 func Int64sToBytes(data []int64) ([]byte, error) {

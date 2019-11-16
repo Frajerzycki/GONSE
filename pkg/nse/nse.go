@@ -2,7 +2,7 @@ package nse
 
 import (
 	"math/big"
-	"github.com/frajerzycki/gonse/internal/errors"
+	"github.com/ikcilrep/gonse/internal/errors"
 	)
 
 var bigZero *big.Int = big.NewInt(0)

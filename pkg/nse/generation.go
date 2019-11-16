@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"golang.org/x/crypto/hkdf"
-	"github.com/frajerzycki/gonse/internal/errors"
+	"github.com/ikcilrep/gonse/internal/errors"
 	"io"
 	"math/big"
 )
