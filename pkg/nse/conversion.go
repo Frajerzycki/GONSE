@@ -3,9 +3,9 @@ package nse
 import (
 	"encoding/binary"
 	"github.com/ikcilrep/gonse/internal/errors"
-	)
+)
 
-func Int64sToBytes(data []int64) ([]byte, error) {
+func Int64sToBytes(data []int64) []byte {
 	dataLength := len(data)
 	resultLength := dataLength * 9
 	result := make([]byte, resultLength)
@@ -23,7 +23,7 @@ func Int64sToBytes(data []int64) ([]byte, error) {
 			resultIndex++
 		}
 	}
-	return result[:resultIndex], nil
+	return result[:resultIndex]
 }
 
 func BytesToInt64s(data []byte) ([]int64, error) {
