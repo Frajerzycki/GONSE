@@ -21,14 +21,14 @@ type NotPositiveDataLengthError struct {
 
 var WrongDataFormatError error = errors.New("Wrong data format.")
 
-func (err DifferentIVLengthError) Error() string {
+func (err *DifferentIVLengthError) Error() string {
 	return fmt.Sprintf("Intialization vector is different length than data: %v != %v.", err.DataLength, err.IVLength)
 }
 
-func (err NotPositiveIntegerKeyError) Error() string {
+func (err *NotPositiveIntegerKeyError) Error() string {
 	return fmt.Sprintf("Key has to be positive integer, but is %v.", err.Key)
 }
 
-func (err NotPositiveDataLengthError) Error() string {
+func (err *NotPositiveDataLengthError) Error() string {
 	return fmt.Sprintf("%v has to has positive length.", err.DataName)
 }

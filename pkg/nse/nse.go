@@ -87,11 +87,11 @@ func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 
 	switch {
 	case dataLength < 1:
-		return nil, errors.NotPositiveDataLengthError{"Data"}
+		return nil, &errors.NotPositiveDataLengthError{"Data"}
 	case dataLength != IVLength:
-		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
+		return nil, &errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(big.NewInt(0)) <= 0:
-		return nil, errors.NotPositiveIntegerKeyError{key}
+		return nil, &errors.NotPositiveIntegerKeyError{key}
 	}
 
 	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, dataLength)
@@ -124,11 +124,11 @@ func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byt
 
 	switch {
 	case dataLength < 1:
-		return nil, errors.NotPositiveDataLengthError{"Ciphertext"}
+		return nil, &errors.NotPositiveDataLengthError{"Ciphertext"}
 	case dataLength != IVLength:
-		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
+		return nil, &errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(bigZero) <= 0:
-		return nil, errors.NotPositiveIntegerKeyError{key}
+		return nil, &errors.NotPositiveIntegerKeyError{key}
 	}
 
 	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, dataLength)
