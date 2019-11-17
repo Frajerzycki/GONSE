@@ -15,8 +15,10 @@ type NotPositiveIntegerKeyError struct {
 	Key *big.Int
 }
 
+type NotPositiveDataLengthError struct {
+	DataName string
+}
 
-var IVZeroLengthError error = errors.New("Initialization vector length has to be positive.")
 var WrongDataFormatError error = errors.New("Wrong data format.")
 
 func (err DifferentIVLengthError) Error() string {
@@ -25,4 +27,8 @@ func (err DifferentIVLengthError) Error() string {
 
 func (err NotPositiveIntegerKeyError) Error() string {
 	return fmt.Sprintf("Key has to be positive integer, but is %v.", err.Key)
+}
+
+func (err NotPositiveDataLengthError) Error() string {
+	return fmt.Sprintf("%v has to has positive length.", err.DataName)
 }

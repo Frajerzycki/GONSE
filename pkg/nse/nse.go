@@ -1,9 +1,9 @@
 package nse
 
 import (
-	"math/big"
 	"github.com/ikcilrep/gonse/internal/errors"
-	)
+	"math/big"
+)
 
 var bigZero *big.Int = big.NewInt(0)
 
@@ -87,8 +87,7 @@ func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 
 	switch {
 	case dataLength < 1:
-		// error to be customized
-		return nil, nil 
+		return nil, errors.NotPositiveDataLengthError{"Data"}
 	case dataLength != IVLength:
 		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(big.NewInt(0)) <= 0:
@@ -125,8 +124,7 @@ func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byt
 
 	switch {
 	case dataLength < 1:
-		// error to be customized
-		return nil, nil
+		return nil, errors.NotPositiveDataLengthError{"Ciphertext"}
 	case dataLength != IVLength:
 		return nil, errors.DifferentIVLengthError{IVLength, dataLength}
 	case key.Cmp(bigZero) <= 0:

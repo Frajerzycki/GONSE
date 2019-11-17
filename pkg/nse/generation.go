@@ -3,8 +3,8 @@ package nse
 import (
 	"crypto/rand"
 	"crypto/sha512"
-	"golang.org/x/crypto/hkdf"
 	"github.com/ikcilrep/gonse/internal/errors"
+	"golang.org/x/crypto/hkdf"
 	"io"
 	"math/big"
 )
@@ -13,7 +13,7 @@ var bigOne *big.Int = big.NewInt(1)
 
 func GenerateIV(length int) ([]int8, error) {
 	if length < 1 {
-		return nil, errors.IVZeroLengthError
+		return nil, errors.NotPositiveDataLengthError{"Initialization vector"}
 	}
 	unsignedIV := make([]byte, length)
 	_, err := rand.Read(unsignedIV)
