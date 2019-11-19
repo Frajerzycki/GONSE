@@ -14,7 +14,7 @@ func Int64sToBytes(data []int64) []byte {
 		buffer := make([]byte, 8)
 		binary.PutVarint(buffer, data[dataIndex])
 		lastNonZeroIndex := 7
-		for ; buffer[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
+		for ; lastNonZeroIndex > 0 && buffer[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
 		}
 		result[resultIndex] = byte(lastNonZeroIndex + 1)
 		resultIndex++
