@@ -3,6 +3,7 @@ package nse
 import (
 	"crypto/rand"
 	"crypto/sha512"
+	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
 	"golang.org/x/crypto/hkdf"
 	"io"
@@ -22,7 +23,7 @@ func GenerateIV(length int) ([]int8, error) {
 	}
 	IV := make([]int8, length)
 	for index, value := range unsignedIV {
-		IV[index] = asSigned(value)
+		IV[index] = bits.AsSigned(value)
 	}
 
 	return IV, nil
@@ -50,7 +51,7 @@ func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	for ok := true; ok; ok = !isNonZeroVector(derivedKey) {
 		io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
 		for i, v := range unsignedDerivedKey {
-			derivedKey[i] = asSigned(v)
+			derivedKey[i] = bits.AsSigned(v)
 		}
 		keyCopy.Add(keyCopy, bigOne)
 	}

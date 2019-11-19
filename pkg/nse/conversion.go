@@ -2,6 +2,7 @@ package nse
 
 import (
 	"encoding/binary"
+	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
 )
 
@@ -48,7 +49,7 @@ func Int8sToBytes(data []int8) []byte {
 	dataLength := len(data)
 	result := make([]byte, dataLength)
 	for index, value := range data {
-		result[index] = asUnsigned(value)
+		result[index] = bits.AsUnsigned(value)
 	}
 	return result
 }
@@ -57,7 +58,7 @@ func BytesToInt8s(data []byte) []int8 {
 	dataLength := len(data)
 	result := make([]int8, dataLength)
 	for index, value := range data {
-		result[index] = asSigned(value)
+		result[index] = bits.AsSigned(value)
 	}
 	return result
 }
