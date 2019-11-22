@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestUnsigningBytes(t *testing.T) {
+func Test_nse_BytesToInt8s(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < 512; i++ {
 		data := make([]byte, i)
@@ -48,7 +48,7 @@ func equalsInt64s(a, b []int64) bool {
 	return true
 }
 
-func TestSplittingInt64sIntoBytes(t *testing.T) {
+func Test_nse_Int64sToBytes(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < 512; i++ {
 		data := randomInt64s(i)

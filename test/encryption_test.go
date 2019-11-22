@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestEncrypt(t *testing.T) {
+func Test_nse_Encrypt(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	for i := 1; i <= 512; i++ {
 		data := make([]byte, i)

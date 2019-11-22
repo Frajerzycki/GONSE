@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestGeneratingIV(t *testing.T) {
+func Test_nse_GenerateIV(t *testing.T) {
 	for i := 1; i <= 512; i++ {
 		IV, err := nse.GenerateIV(i)
 		if err != nil {
