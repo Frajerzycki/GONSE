@@ -6,6 +6,8 @@ import (
 	"github.com/ikcilrep/gonse/internal/errors"
 )
 
+// Int64sToBytes converts []int64 into []byte.
+// For each int64 in the slice there is one byte indicating how many bytes to read next and those bytes.
 func Int64sToBytes(data []int64) []byte {
 	dataLength := len(data)
 	resultLength := dataLength * 9
@@ -27,6 +29,8 @@ func Int64sToBytes(data []int64) []byte {
 	return result[:resultIndex]
 }
 
+// BytesToInt64s converts result of Int64sToBytes back into []int64.
+// It returns errors.WrongDataFormatError as an error when data doesn't appear to be a result of Int64sToBytes.
 func BytesToInt64s(data []byte) ([]int64, error) {
 	dataLength := len(data)
 
@@ -45,6 +49,8 @@ func BytesToInt64s(data []byte) ([]int64, error) {
 	return result[:resultIndex], nil
 }
 
+// Int8sToBytes converts []int8 into []byte.
+// Every int8 in the slice is treated like it would be unsigned.
 func Int8sToBytes(data []int8) []byte {
 	dataLength := len(data)
 	result := make([]byte, dataLength)
@@ -54,6 +60,8 @@ func Int8sToBytes(data []int8) []byte {
 	return result
 }
 
+// BytesToInt8s converts []byte into []int8.
+// Every byte in the slice is treated like it would be signed.
 func BytesToInt8s(data []byte) []int8 {
 	dataLength := len(data)
 	result := make([]int8, dataLength)
