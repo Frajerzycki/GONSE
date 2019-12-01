@@ -8,6 +8,8 @@ import (
 
 var bigZero *big.Int = big.NewInt(0)
 
+// Encrypt encrypts data with given salt, IV and key using NSE algorithm.
+// It returns error if len(data) < 1, len(data) != len(IV) or if key is not a positive integer.
 func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 	var err error
 
@@ -45,6 +47,8 @@ func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 	return encryptedData, nil
 }
 
+// Decrypt decrypts encryptedData with given salt, IV and key using NSE algorithm.
+// It returns error if len(data) < 1, len(data) != len(IV) or if key is not a positive integer.
 func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byte, error) {
 	var err error
 

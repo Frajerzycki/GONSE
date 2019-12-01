@@ -12,6 +12,8 @@ import (
 
 var bigOne *big.Int = big.NewInt(1)
 
+// GenerateIV generates IV of a given length for NSE algorithm.
+// It returns error if length < 1 or if crypto.rand.Read returns an error. 
 func GenerateIV(length int) ([]int8, error) {
 	if length < 1 {
 		return nil, &errors.NotPositiveDataLengthError{"Initialization vector"}
