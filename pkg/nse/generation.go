@@ -3,6 +3,7 @@ package nse
 import (
 	"crypto/rand"
 	"crypto/sha512"
+	"fmt"
 	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
 	"golang.org/x/crypto/hkdf"
@@ -38,19 +39,19 @@ func GenerateIV(length int, rotatedData, derivedKey []int8) ([]int8, error) {
 
 func isDifferenceOrthogonal(derivedKey, IV, rotatedData []int8) bool {
 	var sum int64 = 0
-	for keyElement, index := range derivedKey {
+	for index, keyElement := range derivedKey {
 		sum += int64(keyElement) * (int64(rotatedData[index]) - int64(IV[index]))
 	}
 	return sum == 0
 }
 
-func isNonZeroVector(vector []int8) bool {
+func isZeroVector(vector []int8) bool {
 	for _, v := range vector {
 		if v != 0 {
-			return true
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
@@ -63,7 +64,7 @@ func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	derivedKey = make([]int8, dataLength)
 	keyCopy := new(big.Int)
 	keyCopy.SetBytes(key.Bytes())
-	for ok := true; ok; ok = !isNonZeroVector(derivedKey) {
+	for ok := true; ok; ok = isZeroVector(derivedKey) {
 		io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
 		for i, v := range unsignedDerivedKey {
 			derivedKey[i] = bits.AsSigned(v)

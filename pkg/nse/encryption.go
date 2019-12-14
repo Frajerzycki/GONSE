@@ -8,28 +8,29 @@ import (
 
 var bigZero *big.Int = big.NewInt(0)
 
-// Encrypt encrypts data with given salt, IV and key using NSE algorithm.
-// It returns an error if len(data) < 1, len(data) != len(IV) or if key is not a positive integer.
-func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
+// Encrypt encrypts data with given salt, IV and key using NSE algorithm, returns encrypted data, IV and error.
+// It returns an error if len(data) < 1, if key is not a positive integer or if generateIV function returned an error.
+func Encrypt(data, salt []byte, key *big.Int) ([]int64, []int8, error) {
 	var err error
 
 	dataLength := len(data)
-	IVLength := len(IV)
 
 	switch {
 	case dataLength < 1:
-		return nil, &errors.NotPositiveDataLengthError{"Data"}
-	case dataLength != IVLength:
-		return nil, &errors.DifferentIVLengthError{IVLength, dataLength}
+		return nil, nil, &errors.NotPositiveDataLengthError{"Data"}
 	case key.Cmp(big.NewInt(0)) <= 0:
-		return nil, &errors.NotPositiveIntegerKeyError{key}
+		return nil, nil, &errors.NotPositiveIntegerKeyError{key}
 	}
 
 	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, dataLength)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	rotated := bits.RightRotate(data, bitsToRotate, bytesToRotate)
+	IV, err := GenerateIV(dataLength, rotated, derivedKey)
+	if err != nil {
+		return nil, nil, err
+	}
 	rotated64, IV64, derivedKey64 := make([]int64, dataLength), make([]int64, dataLength), make([]int64, dataLength)
 
 	var sum1, sum2 int64 = 0, 0
@@ -44,7 +45,7 @@ func Encrypt(data, salt []byte, IV []int8, key *big.Int) ([]int64, error) {
 		encryptedData[index] = rotated64[index]*sum1 - ((derivedKey64[index] * sum2) << 1)
 	}
 
-	return encryptedData, nil
+	return encryptedData, IV, nil
 }
 
 // Decrypt decrypts encryptedData with given salt, IV and key using NSE algorithm.

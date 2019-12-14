@@ -15,19 +15,12 @@ func Test_nse_Encrypt(t *testing.T) {
 		data := make([]byte, i)
 		keyBytes := make([]byte, 32)
 		salt := make([]byte, 16)
-		IV, err := nse.GenerateIV(i)
-		if err != nil {
-			t.Error(err)
-		}
-		if len(IV) != i {
-			t.Errorf("IV length %v is not data length %v", len(IV), i)
-		}
 		key := new(big.Int)
 		rand.Read(data)
 		rand.Read(keyBytes)
 		rand.Read(salt)
 		key.SetBytes(keyBytes)
-		ciphertext, err := nse.Encrypt(data, salt, IV, key)
+		ciphertext, IV, err := nse.Encrypt(data, salt, key)
 		if err != nil {
 			t.Error(err)
 		}
