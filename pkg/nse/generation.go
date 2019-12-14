@@ -13,22 +13,35 @@ import (
 var bigOne *big.Int = big.NewInt(1)
 
 // GenerateIV generates IV of a given length for NSE algorithm.
-// It returns an error if length < 1 or if crypto.rand.Read returns an error. 
-func GenerateIV(length int) ([]int8, error) {
+// It returns an error if length < 1 or if crypto.rand.Read returns an error.
+func GenerateIV(length int, rotatedData, derivedKey []int8) ([]int8, error) {
 	if length < 1 {
 		return nil, &errors.NotPositiveDataLengthError{"Initialization vector"}
 	}
-	unsignedIV := make([]byte, length)
-	_, err := rand.Read(unsignedIV)
-	if err != nil {
-		return nil, err
-	}
-	IV := make([]int8, length)
-	for index, value := range unsignedIV {
-		IV[index] = bits.AsSigned(value)
+
+	var unsignedIV []byte
+	var IV []int8
+	for ok := true; ok; ok = isDifferenceOrthogonal(derivedKey, IV, rotatedData) {
+		unsignedIV = make([]byte, length)
+		_, err := rand.Read(unsignedIV)
+		if err != nil {
+			return nil, err
+		}
+		IV = make([]int8, length)
+		for index, value := range unsignedIV {
+			IV[index] = bits.AsSigned(value)
+		}
 	}
 
 	return IV, nil
+}
+
+func isDifferenceOrthogonal(derivedKey, IV, rotatedData []int8) bool {
+	var sum int64 = 0
+	for keyElement, index := range derivedKey {
+		sum += int64(keyElement) * (int64(rotatedData[index]) - int64(IV[index]))
+	}
+	return sum == 0
 }
 
 func isNonZeroVector(vector []int8) bool {
