@@ -3,7 +3,6 @@ package nse
 import (
 	"crypto/rand"
 	"crypto/sha512"
-	"fmt"
 	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
 	"golang.org/x/crypto/hkdf"
