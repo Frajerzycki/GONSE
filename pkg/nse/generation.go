@@ -45,11 +45,12 @@ func isDifferenceOrthogonal(derivedKey, IV, rotatedData []int8) bool {
 }
 
 func isZeroVector(vector []int8) bool {
-	var sum int64 = 0
-	for _, v := range vector {
-		sum += int64(v) * int64(v)
+	for _, value := range vector {
+		if value != 0 {
+			return false
+		}
 	}
-	return sum == 0
+	return true
 }
 
 func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
