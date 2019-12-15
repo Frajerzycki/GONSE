@@ -47,7 +47,7 @@ func isDifferenceOrthogonal(derivedKey, IV, rotatedData []int8) bool {
 func isZeroVector(vector []int8) bool {
 	var sum int64 = 0
 	for _, v := range vector {
-		sum += int64(v)
+		sum += int64(v) * int64(v)
 	}
 	return sum == 0
 }
