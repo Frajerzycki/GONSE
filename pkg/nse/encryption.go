@@ -45,7 +45,7 @@ func EncryptWithAlreadyDerivedKey(data, salt []byte, derivedKey []int8, bitsToRo
 // Encrypt encrypts data with given salt, IV and key using NSE algorithm, returns encrypted data, IV and error.
 // It returns an error if len(data) < 1, if key is not a positive integer or if generateIV function returned an error.
 func Encrypt(data, salt []byte, key *big.Int) ([]int64, []int8, error) {
-	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, len(data))
+	bitsToRotate, bytesToRotate, derivedKey, err := DeriveKey(key, salt, len(data))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -87,7 +87,7 @@ func DecryptWithAlreadyDerivedKey(encryptedData []int64, salt []byte, IV []int8,
 // Decrypt decrypts encryptedData with given salt, IV and key using NSE algorithm.
 // It returns an error if len(data) < 1, len(data) != len(IV) or if key is not a positive integer.
 func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byte, error) {
-	bitsToRotate, bytesToRotate, derivedKey, err := deriveKey(key, salt, len(encryptedData))
+	bitsToRotate, bytesToRotate, derivedKey, err := DeriveKey(key, salt, len(encryptedData))
 	if err != nil {
 		return nil, err
 	}
