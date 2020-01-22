@@ -53,7 +53,7 @@ func isZeroVector(vector []int8) bool {
 	return true
 }
 
-func deriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
+func DeriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
 	var bigKeyWithExcludedLength big.Int
 	bigKeyWithExcludedLength.Mod(key, big.NewInt(int64(dataLength<<3)))
 	keyWithExcludedLength := bigKeyWithExcludedLength.Uint64()
