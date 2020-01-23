@@ -6,6 +6,16 @@ import (
 	"github.com/ikcilrep/gonse/internal/errors"
 )
 
+// Int64ToBytes converts integer to byte array. It ignores padding, result is as short as possible.
+func Int64ToBytes(integer int64) []byte {
+	bytes := make([]byte, 8)
+	binary.PutVarint(bytes, integer)
+	lastNonZeroIndex := 7
+	for ; lastNonZeroIndex > 0 && bytes[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
+	}
+	return bytes[:lastNonZeroIndex+1]
+}
+
 // Int64sToBytes converts []int64 into []byte.
 // For each int64 in the slice there is one byte indicating how many bytes to read next and those bytes.
 func Int64sToBytes(data []int64) []byte {
@@ -14,17 +24,11 @@ func Int64sToBytes(data []int64) []byte {
 	result := make([]byte, resultLength)
 	resultIndex := 0
 	for dataIndex := 0; dataIndex < dataLength; dataIndex++ {
-		buffer := make([]byte, 8)
-		binary.PutVarint(buffer, data[dataIndex])
-		lastNonZeroIndex := 7
-		for ; lastNonZeroIndex > 0 && buffer[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
-		}
-		result[resultIndex] = byte(lastNonZeroIndex + 1)
+		integerBytes := Int64ToBytes(data[dataIndex])
+		result[resultIndex] = byte(len(integerBytes))
 		resultIndex++
-		for index := 0; index <= lastNonZeroIndex; index++ {
-			result[resultIndex] = buffer[index]
-			resultIndex++
-		}
+		copy(result[resultIndex:], integerBytes)
+		resultIndex += len(integerBytes)
 	}
 	return result[:resultIndex]
 }
