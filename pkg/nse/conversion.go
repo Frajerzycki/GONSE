@@ -6,7 +6,7 @@ import (
 	"github.com/ikcilrep/gonse/internal/errors"
 )
 
-// Int64ToBytes converts integer to byte array. It ignores padding, result is as short as possible.
+// Int64ToBytes converts integer into byte array. It ignores padding, result is as short as possible.
 func Int64ToBytes(integer int64) []byte {
 	bytes := make([]byte, 8)
 	binary.PutVarint(bytes, integer)
@@ -14,6 +14,17 @@ func Int64ToBytes(integer int64) []byte {
 	for ; lastNonZeroIndex > 0 && bytes[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
 	}
 	return bytes[:lastNonZeroIndex+1]
+}
+
+// BytesToInt64 converts byte array into int64. It returns converted integer, bytes read and err.
+// err != nil if and only if binary.Varint returns an error.
+func BytesToInt64(data []byte) (int64, int, error) {
+	length := int(data[0]) + 1
+	result, bytesRead := binary.Varint(data[1:length])
+	if bytesRead <= 0 {
+		return int64(0), 0, errors.WrongDataFormatError
+	}
+	return result, length, nil
 }
 
 // Int64sToBytes converts []int64 into []byte.
@@ -42,13 +53,13 @@ func BytesToInt64s(data []byte) ([]int64, error) {
 	result := make([]int64, resultLength)
 	resultIndex := 0
 	for dataIndex := 0; dataIndex < dataLength; resultIndex++ {
-		newDataIndex := dataIndex + int(data[dataIndex]) + 1
-		if newDataIndex > dataLength {
-			return nil, errors.WrongDataFormatError
+		var bytesRead int
+		var err error
+		result[resultIndex], bytesRead, err = BytesToInt64(data[dataIndex:])
+		if err != nil {
+			return nil, err
 		}
-
-		result[resultIndex], _ = binary.Varint(data[dataIndex+1 : newDataIndex])
-		dataIndex = newDataIndex
+		dataIndex += bytesRead
 	}
 	return result[:resultIndex], nil
 }
