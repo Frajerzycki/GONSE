@@ -53,6 +53,8 @@ func isZeroVector(vector []int8) bool {
 	return true
 }
 
+// DeriveKey derives key from given big integer key, salt. DerivedKey has the same length as data, so it is dataLength.
+// It returns bitsToRotate, bytesToRotate, derivedKey and err, err != nil if and only if key is not positive or hkdf returns an error.
 func DeriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
 	if key.Cmp(big.NewInt(0)) <= 0 {
 		return byte(0), 0, nil, &errors.NotPositiveIntegerKeyError{key}
@@ -67,7 +69,10 @@ func DeriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, by
 	keyCopy := new(big.Int)
 	keyCopy.SetBytes(key.Bytes())
 	for ok := true; ok; ok = isZeroVector(derivedKey) {
-		io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
+		_, err := io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
+		if err != nil {
+			return byte(0), 0, nil, err
+		}
 		for i, v := range unsignedDerivedKey {
 			derivedKey[i] = bits.AsSigned(v)
 		}
