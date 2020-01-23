@@ -54,6 +54,9 @@ func isZeroVector(vector []int8) bool {
 }
 
 func DeriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
+	if key.Cmp(big.NewInt(0)) <= 0 {
+		return byte(0), 0, nil, &errors.NotPositiveIntegerKeyError{key}
+	}
 	var bigKeyWithExcludedLength big.Int
 	bigKeyWithExcludedLength.Mod(key, big.NewInt(int64(dataLength<<3)))
 	keyWithExcludedLength := bigKeyWithExcludedLength.Uint64()
