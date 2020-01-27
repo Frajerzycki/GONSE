@@ -10,7 +10,7 @@ var bigZero *big.Int = big.NewInt(0)
 
 // Encrypt encrypts data with given salt, IV and all derived key elements using NSE algorithm, returns encrypted data, IV and error.
 // It returns an error if len(data) < 1, if key is not a positive integer or if generateIV function returned an error.
-func EncryptWithAlreadyDerivedKey(data, salt []byte, derivedKey []int8, bitsToRotate byte, bytesToRotate int) ([]int64, []int8, error) {
+func EncryptWithAlreadyDerivedKey(data []byte, derivedKey []int8, bitsToRotate byte, bytesToRotate int) ([]int64, []int8, error) {
 	var err error
 
 	dataLength := len(data)
@@ -49,12 +49,12 @@ func Encrypt(data, salt []byte, key *big.Int) ([]int64, []int8, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return EncryptWithAlreadyDerivedKey(data, salt, derivedKey, bitsToRotate, bytesToRotate)
+	return EncryptWithAlreadyDerivedKey(data, derivedKey, bitsToRotate, bytesToRotate)
 }
 
 // Decrypt decrypts encryptedData with given salt, IV and all derived key elements using NSE algorithm.
 // It returns an error if len(data) < 1, len(data) != len(IV) or if key is not a positive integer.
-func DecryptWithAlreadyDerivedKey(encryptedData []int64, salt []byte, IV []int8, derivedKey []int8, bitsToRotate byte, bytesToRotate int) ([]byte, error) {
+func DecryptWithAlreadyDerivedKey(encryptedData []int64, IV []int8, derivedKey []int8, bitsToRotate byte, bytesToRotate int) ([]byte, error) {
 	dataLength := len(encryptedData)
 	IVLength := len(IV)
 
@@ -91,5 +91,5 @@ func Decrypt(encryptedData []int64, salt []byte, IV []int8, key *big.Int) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	return DecryptWithAlreadyDerivedKey(encryptedData, salt, IV, derivedKey, bitsToRotate, bytesToRotate)
+	return DecryptWithAlreadyDerivedKey(encryptedData, IV, derivedKey, bitsToRotate, bytesToRotate)
 }
