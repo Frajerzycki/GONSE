@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
+	"io"
 )
 
 // Int64ToBytes converts integer into byte array. It ignores padding, result is as short as possible.
@@ -21,6 +22,29 @@ func Int64ToBytes(integer int64) []byte {
 func BytesToInt64(data []byte) (int64, int, error) {
 	length := int(data[0]) + 1
 	result, bytesRead := binary.Varint(data[1:length])
+	if bytesRead <= 0 {
+		return int64(0), 0, errors.WrongDataFormatError
+	}
+	return result, length, nil
+}
+
+// BytesToInt64FromReader converts few first bytes into int64. It returns converted integer, bytes read and err.
+// err != nil if and only if binary.Varint returns an error or given reader doesn't have that many bytes to read.
+func BytesToInt64FromReader(reader io.Reader) (int64, int, error) {
+	lengthByte := make([]byte, 1)
+	_, err := io.ReadFull(reader, lengthByte)
+	if err != nil {
+		return int64(0), 0, errors.WrongDataFormatError
+	}
+	length := int(lengthByte[0]) + 1
+	resultBytes := make([]byte, length-1)
+
+	_, err = io.ReadFull(reader, resultBytes)
+	if err != nil {
+		return int64(0), 0, errors.WrongDataFormatError
+	}
+
+	result, bytesRead := binary.Varint(resultBytes)
 	if bytesRead <= 0 {
 		return int64(0), 0, errors.WrongDataFormatError
 	}
