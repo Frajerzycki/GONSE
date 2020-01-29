@@ -35,13 +35,13 @@ func BytesToInt64FromReader(reader io.Reader) (int64, int, error) {
 	lengthByte := make([]byte, 1)
 	_, err := io.ReadFull(reader, lengthByte)
 	if err != nil {
-		return int64(0), 0, errors.WrongDataFormatError
+		return int64(0), 0, err
 	}
 	length := int(lengthByte[0])
 	resultBytes := make([]byte, length)
 	_, err = io.ReadFull(reader, resultBytes)
 	if err != nil {
-		return int64(0), 0, errors.WrongDataFormatError
+		return int64(0), 0, err
 	}
 
 	result, bytesRead := binary.Varint(resultBytes)

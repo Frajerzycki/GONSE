@@ -11,8 +11,8 @@ import (
 
 func Test_nse_Encrypt(t *testing.T) {
 	rand.Seed(time.Now().Unix())
-	for i := 1; i <= 512; i++ {
-		data := make([]byte, i)
+	for dataLength := 1; dataLength <= 512; dataLength++ {
+		data := make([]byte, dataLength)
 		keyBytes := make([]byte, 32)
 		salt := make([]byte, 16)
 		key := new(big.Int)
@@ -20,11 +20,16 @@ func Test_nse_Encrypt(t *testing.T) {
 		rand.Read(keyBytes)
 		rand.Read(salt)
 		key.SetBytes(keyBytes)
-		ciphertext, IV, err := nse.Encrypt(data, salt, key)
+		derivedKey, err := nse.DeriveKey(key, salt, dataLength)
 		if err != nil {
 			t.Error(err)
 		}
-		decryptedData, err := nse.Decrypt(ciphertext, salt, IV, key)
+		ciphertext, IV, err := nse.Encrypt(data, derivedKey)
+
+		if err != nil {
+			t.Error(err)
+		}
+		decryptedData, err := nse.Decrypt(ciphertext, IV, derivedKey)
 		if err != nil {
 			t.Error(err)
 		}

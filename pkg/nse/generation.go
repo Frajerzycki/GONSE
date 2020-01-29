@@ -10,18 +10,24 @@ import (
 	"math/big"
 )
 
+type NSEKey struct {
+	Data          []int8
+	BitsToRotate  byte
+	BytesToRotate int
+}
+
 var bigOne *big.Int = big.NewInt(1)
 
-// GenerateIV generates IV of a given length for NSE algorithm.
+// GenerateIV generates IV of given length for NSE algorithm.
 // It returns an error if length < 1 or if crypto.rand.Read returns an error.
-func GenerateIV(length int, rotatedData, derivedKey []int8) ([]int8, error) {
+func GenerateIV(length int, rotatedData []int8, key *NSEKey) ([]int8, error) {
 	if length < 1 {
 		return nil, &errors.NotPositiveDataLengthError{"Initialization vector"}
 	}
 
 	var unsignedIV []byte
 	var IV []int8
-	for ok := true; ok; ok = isDifferenceOrthogonal(derivedKey, IV, rotatedData) {
+	for ok := true; ok; ok = isDifferenceOrthogonal(key.Data, IV, rotatedData) {
 		unsignedIV = make([]byte, length)
 		_, err := rand.Read(unsignedIV)
 		if err != nil {
@@ -54,27 +60,28 @@ func isZeroVector(vector []int8) bool {
 }
 
 // DeriveKey derives key from given big integer key, salt. DerivedKey has the same length as data, so it is dataLength.
-// It returns bitsToRotate, bytesToRotate, derivedKey and err, err != nil if and only if key is not positive or hkdf returns an error.
-func DeriveKey(key *big.Int, salt []byte, dataLength int) (bitsToRotate byte, bytesToRotate int, derivedKey []int8, err error) {
+// It returns derived key as struct NSEKey and err, err != nil if and only if given key is not positive or hkdf returns an error.
+func DeriveKey(key *big.Int, salt []byte, dataLength int) (derivedKey *NSEKey, err error) {
 	if key.Cmp(big.NewInt(0)) <= 0 {
-		return byte(0), 0, nil, &errors.NotPositiveIntegerKeyError{key}
+		return derivedKey, &errors.NotPositiveIntegerKeyError{key}
 	}
 	var bigKeyWithExcludedLength big.Int
 	bigKeyWithExcludedLength.Mod(key, big.NewInt(int64(dataLength<<3)))
 	keyWithExcludedLength := bigKeyWithExcludedLength.Uint64()
-	bitsToRotate = byte(keyWithExcludedLength & 7)
-	bytesToRotate = int(keyWithExcludedLength >> 3)
+	derivedKey = &NSEKey{
+		BitsToRotate:  byte(keyWithExcludedLength & 7),
+		BytesToRotate: int(keyWithExcludedLength >> 3),
+		Data:          make([]int8, dataLength)}
 	unsignedDerivedKey := make([]byte, dataLength)
-	derivedKey = make([]int8, dataLength)
 	keyCopy := new(big.Int)
 	keyCopy.SetBytes(key.Bytes())
-	for ok := true; ok; ok = isZeroVector(derivedKey) {
+	for ok := true; ok; ok = isZeroVector(derivedKey.Data) {
 		_, err := io.ReadFull(hkdf.New(sha512.New, keyCopy.Bytes(), salt, nil), unsignedDerivedKey)
 		if err != nil {
-			return byte(0), 0, nil, err
+			return derivedKey, err
 		}
 		for i, v := range unsignedDerivedKey {
-			derivedKey[i] = bits.AsSigned(v)
+			derivedKey.Data[i] = bits.AsSigned(v)
 		}
 		keyCopy.Add(keyCopy, bigOne)
 	}
