@@ -58,7 +58,26 @@ func Test_nse_Int64sToBytes(t *testing.T) {
 			t.Error(err)
 		}
 		if !equalsInt64s(data, unconvertedData) {
-			t.Errorf("%v as unsigned is %v, but %v as signed is %v which is not the same", data, convertedData, convertedData, unconvertedData)
+			t.Errorf("%v is not %v", data, unconvertedData)
+		}
+	}
+
+}
+
+func Test_nse_BytesToInt64FromReader(t *testing.T) {
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < 512; i++ {
+		data := randomInt64s(1)[0]
+		convertedData := nse.Int64ToBytes(data)
+		bufferConvertedData := bytes.NewBuffer(convertedData)
+
+		unconvertedData, _, err := nse.BytesToInt64FromReader(bufferConvertedData)
+		if err != nil {
+			t.Error(err)
+		}
+		if data != unconvertedData {
+
+			t.Errorf("%v is not %v,\nconverted data is %v", data, unconvertedData, convertedData)
 		}
 	}
 

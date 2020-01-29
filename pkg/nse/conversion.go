@@ -7,13 +7,14 @@ import (
 	"io"
 )
 
-// Int64ToBytes converts integer into byte array. It ignores padding, result is as short as possible.
+// Int64ToBytes converts integer into byte array. It ignores padding, result is as short as possible. First byte is length of the rest.
 func Int64ToBytes(integer int64) []byte {
-	bytes := make([]byte, 8)
-	binary.PutVarint(bytes, integer)
-	lastNonZeroIndex := 7
-	for ; lastNonZeroIndex > 0 && bytes[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
+	bytes := make([]byte, 9)
+	binary.PutVarint(bytes[1:], integer)
+	lastNonZeroIndex := 8
+	for ; lastNonZeroIndex > 1 && bytes[lastNonZeroIndex] == 0; lastNonZeroIndex-- {
 	}
+	bytes[0] = byte(lastNonZeroIndex)
 	return bytes[:lastNonZeroIndex+1]
 }
 
@@ -36,9 +37,8 @@ func BytesToInt64FromReader(reader io.Reader) (int64, int, error) {
 	if err != nil {
 		return int64(0), 0, errors.WrongDataFormatError
 	}
-	length := int(lengthByte[0]) + 1
-	resultBytes := make([]byte, length-1)
-
+	length := int(lengthByte[0])
+	resultBytes := make([]byte, length)
 	_, err = io.ReadFull(reader, resultBytes)
 	if err != nil {
 		return int64(0), 0, errors.WrongDataFormatError
@@ -48,7 +48,7 @@ func BytesToInt64FromReader(reader io.Reader) (int64, int, error) {
 	if bytesRead <= 0 {
 		return int64(0), 0, errors.WrongDataFormatError
 	}
-	return result, length, nil
+	return result, length + 1, nil
 }
 
 // Int64sToBytes converts []int64 into []byte.
@@ -60,8 +60,6 @@ func Int64sToBytes(data []int64) []byte {
 	resultIndex := 0
 	for dataIndex := 0; dataIndex < dataLength; dataIndex++ {
 		integerBytes := Int64ToBytes(data[dataIndex])
-		result[resultIndex] = byte(len(integerBytes))
-		resultIndex++
 		copy(result[resultIndex:], integerBytes)
 		resultIndex += len(integerBytes)
 	}
