@@ -1,9 +1,10 @@
 package nse
 
 import (
+	"math/big"
+
 	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
-	"math/big"
 )
 
 var bigZero *big.Int = big.NewInt(0)
@@ -65,10 +66,13 @@ func Decrypt(encryptedData []int64, IV []int8, key *NSEKey) (decryptedData []byt
 		sum3 += derivedKey64[index] * IV64[index]
 	}
 
-	sum1Square := sum1 * sum1
-
 	for index := range encryptedData {
-		rotated[index] = bits.AsUnsigned(int8(((encryptedData64[index]+((derivedKey64[index]*sum3)<<1))*sum1 - ((derivedKey64[index] * sum2) << 1)) / sum1Square))
+		a := encryptedData64[index] + ((derivedKey64[index] * sum3) << 1)
+		b := (derivedKey64[index]*(sum2/sum1) + (derivedKey64[index]*(sum2%sum1))/sum1) << 1
+		d := a - b
+		d /= sum1
+
+		rotated[index] = bits.AsUnsigned(int8(d))
 	}
 	return bits.LeftRotate(rotated, key.BitsToRotate, key.BytesToRotate), nil
 }

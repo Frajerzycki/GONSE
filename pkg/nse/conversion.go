@@ -2,9 +2,10 @@ package nse
 
 import (
 	"encoding/binary"
+	"io"
+
 	"github.com/ikcilrep/gonse/internal/bits"
 	"github.com/ikcilrep/gonse/internal/errors"
-	"io"
 )
 
 // Int64ToBytes converts integer into byte array. It ignores padding, result is as short as possible. First byte is length of the rest.
