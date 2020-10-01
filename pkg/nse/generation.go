@@ -2,6 +2,7 @@ package nse
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/sha512"
 	"io"
 	"math/big"
@@ -89,14 +90,22 @@ func isZeroVector(vector []int8) bool {
 	return true
 }
 
+func digestInteger(integer *big.Int) *big.Int {
+	bytes := sha256.Sum256(integer.Bytes())
+	result := new(big.Int)
+	result.SetBytes(bytes[:])
+	return result
+}
+
 // DeriveKey derives key from given big integer key, salt. DerivedKey has the same length as data, so it is dataLength.
 // It returns derived key as struct NSEKey and err, err != nil if and only if given key is not positive or hkdf returns an error.
 func DeriveKey(key *big.Int, salt []byte, dataLength int) (derivedKey *NSEKey, err error) {
 	if key.Cmp(big.NewInt(0)) <= 0 {
 		return derivedKey, &errors.NotPositiveIntegerKeyError{key}
 	}
+	keyDigest := digestInteger(key)
 	var bigKeyWithExcludedLength big.Int
-	bigKeyWithExcludedLength.Mod(key, big.NewInt(int64(dataLength<<3)))
+	bigKeyWithExcludedLength.Mod(keyDigest, big.NewInt(int64(dataLength<<3)))
 	keyWithExcludedLength := bigKeyWithExcludedLength.Uint64()
 	derivedKey = &NSEKey{
 		BitsToRotate:  byte(keyWithExcludedLength & 7),
